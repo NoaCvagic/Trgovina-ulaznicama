@@ -17,7 +17,7 @@ int main() {
     if (!nogometKosarica) {
         printf("Greska pri alokaciji nogomet kosarice.\n");
         free(koncertKosarica);
-        return EXIT_FAILURE
+        return EXIT_FAILURE;
     }
     nogometKosarica->brojArtikala = 0;
 
