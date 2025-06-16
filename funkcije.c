@@ -179,8 +179,20 @@ void oslobodiMemoriju() {
 void ucitajIzBaze() {
     FILE* f = fopen("ulaznice.txt", "r");
     if (!f) {
-        perror("Greska pri otvaranju datoteke za citanje.");
-        return;
+        // Ako datoteka ne postoji, kreiraj praznu datoteku
+        f = fopen("ulaznice.txt", "w");
+        if (!f) {
+            perror("Greska pri kreiranju datoteke");
+            return;
+        }
+        fprintf(f, "0\n0\n");  
+        fclose(f);
+        
+        f = fopen("ulaznice.txt", "r");
+        if (!f) {
+            perror("Greska pri otvaranju datoteke za citanje");
+            return;
+        }
     }
 
     fseek(f, 0, SEEK_END);
@@ -379,7 +391,7 @@ void obrisiBazu() {
         printf("Datoteka uspjesno obrisana.\n");
     }
     else {
-        perror("Ne mogu obrisati datoteku");
+        perror("Ne moze se obrisati datoteka.");
     }
 }
 
@@ -389,7 +401,7 @@ void preimenujBazu() {
         printf("Datoteka uspjesno preimenovana.\n");
     }
     else {
-        perror("Greska pri preimenovanju datoteke");
+        perror("Greska pri preimenovanju datoteke.");
     }
 }
 
@@ -407,7 +419,7 @@ void spremiUBazu() {
 
     fprintf(f, "Broj nogometnih ulaznica: %d\n", brojNogometUlaznica);
     for (int i = 0; i < brojNogometUlaznica; i++) {
-        fprintf(f, "Kod: %d//Ime dogadjaja: %s//Cijena: %.2f//Dostupno: %d\n", nogometBaza[i]->kodUlaznice, nogometBaza[i]->naziv, nogometBaza[i]->cijena, nogometBaza[i]->dostupno);
+        fprintf(f, "Kod ulaznice: %d//Ime dogadjaja: %s//Cijena: %.2f//Dostupno: %d\n", nogometBaza[i]->kodUlaznice, nogometBaza[i]->naziv, nogometBaza[i]->cijena, nogometBaza[i]->dostupno);
     }
 
     fclose(f);
