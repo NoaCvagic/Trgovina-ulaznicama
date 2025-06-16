@@ -27,7 +27,7 @@ int main() {
     do {
         printf("Odaberite kategoriju:\n1. Koncert\n2. Nogomet\nOdabir: ");
         if (scanf("%d", &izbor) != 1) {
-            printf("Neispravan unos! Molimo unijeti broj 1 ili 2.\n");
+            printf("Neispravan unos. Treba unijeti broj 1 ili 2.\n");
 
             while (getchar() != '\n');
             izbor = 0;
