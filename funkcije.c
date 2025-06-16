@@ -179,10 +179,10 @@ void oslobodiMemoriju() {
 void ucitajIzBaze() {
     FILE* f = fopen("ulaznice.txt", "r");
     if (!f) {
-        // Ako datoteka ne postoji, kreiraj praznu datoteku
+        
         f = fopen("ulaznice.txt", "w");
         if (!f) {
-            perror("Greska pri kreiranju datoteke");
+            perror("Greska pri kreiranju datoteke.");
             return;
         }
         fprintf(f, "0\n0\n");  
@@ -190,7 +190,7 @@ void ucitajIzBaze() {
         
         f = fopen("ulaznice.txt", "r");
         if (!f) {
-            perror("Greska pri otvaranju datoteke za citanje");
+            perror("Greska pri otvaranju datoteke za citanje.");
             return;
         }
     }
@@ -229,7 +229,7 @@ void ucitajIzBaze() {
     }
 
     if (fscanf(f, "%d\n", &brojNogometUlaznica) != 1) {
-        printf("Greska pri citanju broja nogomet ulaznica.\n");
+        printf("Greska pri citanju broja nogometnih ulaznica.\n");
         fclose(f);
         return;
     }
