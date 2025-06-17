@@ -67,13 +67,14 @@ void dodajUlaznicu() {
         koncertBaza[brojKoncertUlaznica++] = nova;
     else
         nogometBaza[brojNogometUlaznica++] = nova;
+    spremiUBazu();
 
     printf("Ulaznica dodana!\n");
 }
 
 void prikaziJednuUlaznicu(Ulaznica* u) {
     if (u == NULL) {
-        printf("(prazno)\n");
+        printf("prazno\n");
         return;
     }
     printf("Kod ulaznice: %d // Naziv: %s // Cijena: %.2f // Dostupno: %d\n",
@@ -84,7 +85,7 @@ void prikaziSveUlaznice() {
     Ulaznica** baza = (aktivnaVrsta == 0) ? koncertBaza : nogometBaza;
     int broj = (aktivnaVrsta == 0) ? brojKoncertUlaznica : brojNogometUlaznica;
 
-    printf("Dostupne ulaznice\n");
+    printf("Dostupne ulaznice: \n");
     for (int i = 0; i < broj; i++)
         prikaziJednuUlaznicu(baza[i]);
 }
@@ -94,34 +95,54 @@ void azurirajUlaznicu() {
     printf("Unesi kod ulaznice za azuriranje: ");
     if (scanf("%d", &kodUlaznice) != 1) {
         printf("Neispravan unos koda ulaznice.\n");
-      
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
+        while ((getchar()) != '\n' && !feof(stdin));
         return;
     }
 
     Ulaznica* u = pronadiUlaznicuPoKodu(kodUlaznice);
     if (u) {
-        printf("Nova cijena: ");
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF); 
+
+        char buffer[100];
+        printf("Unesi novi naziv dogadjaja (trenutni: %s): ", u->naziv);
+        if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+            size_t len = strlen(buffer);
+            if (len > 0 && buffer[len - 1] == '\n')
+                buffer[len - 1] = '\0';
+
+            char* noviNaziv = (char*)malloc(strlen(buffer) + 1);
+            if (noviNaziv) {
+                strcpy(noviNaziv, buffer);
+                free(u->naziv);
+                u->naziv = noviNaziv;
+            }
+            else {
+                printf("Greska pri alokaciji memorije za naziv.\n");
+                return;
+            }
+        }
+
+        printf("Nova cijena (trenutna: %.2f): ", u->cijena);
         if (scanf("%f", &u->cijena) != 1) {
             printf("Neispravan unos cijene.\n");
             while ((getchar()) != '\n' && !feof(stdin));
             return;
         }
 
-        printf("Novi broj dostupnih ulaznica: ");
+        printf("Novi broj dostupnih ulaznica (trenutno: %d): ", u->dostupno);
         if (scanf("%d", &u->dostupno) != 1) {
             printf("Neispravan unos broja dostupnih ulaznica.\n");
             while ((getchar()) != '\n' && !feof(stdin));
             return;
         }
 
-        printf("Ulaznica je azurirana.\n");
+        printf("Ulaznica je uspjesno azurirana.\n");
+        spremiUBazu(); 
     }
     else {
         printf("Ulaznica nije pronadena.\n");
     }
-
 }
 
 void obrisiUlaznicu() {
@@ -160,7 +181,7 @@ Ulaznica* pronadiUlaznicuPoKodu(int kodUlaznice) {
 
 
 void oslobodiMemoriju() {
-   
+
     for (int i = 0; i < brojKoncertUlaznica; i++) {
         SIGURNO_FREE(koncertBaza[i]->naziv);
         SIGURNO_FREE(koncertBaza[i]);
@@ -179,15 +200,15 @@ void oslobodiMemoriju() {
 void ucitajIzBaze() {
     FILE* f = fopen("ulaznice.txt", "r");
     if (!f) {
-        
+
         f = fopen("ulaznice.txt", "w");
         if (!f) {
             perror("Greska pri kreiranju datoteke.");
             return;
         }
-        fprintf(f, "0\n0\n");  
+        fprintf(f, "0\n0\n");
         fclose(f);
-        
+
         f = fopen("ulaznice.txt", "r");
         if (!f) {
             perror("Greska pri otvaranju datoteke za citanje.");
@@ -237,13 +258,13 @@ void ucitajIzBaze() {
     for (int i = 0; i < brojNogometUlaznica; i++) {
         Ulaznica* u = (Ulaznica*)malloc(sizeof(Ulaznica));
         if (!u) continue;
-        char buffer[100] = { 0 };  
+        char buffer[100] = { 0 };
 
         if (fscanf(f, "%d//%99[^|]|%f|%d\n", &u->kodUlaznice, buffer, &u->cijena, &u->dostupno) != 4) {
             free(u);
             continue;
         }
-        buffer[99] = '\0'; 
+        buffer[99] = '\0';
 
         u->naziv = malloc(strlen(buffer) + 1);
         if (!u->naziv) {
@@ -412,16 +433,23 @@ void spremiUBazu() {
         return;
     }
 
-    fprintf(f, "Broj koncert ulaznica: %d\n", brojKoncertUlaznica);
+    fprintf(f, "%d\n", brojKoncertUlaznica);
     for (int i = 0; i < brojKoncertUlaznica; i++) {
-        fprintf(f, "Kod ulaznice: %d//Ime dogadjaja: %s//Cijena: %.2f//Dostupno: %d\n", koncertBaza[i]->kodUlaznice, koncertBaza[i]->naziv, koncertBaza[i]->cijena, koncertBaza[i]->dostupno);
+        fprintf(f, "%d//%s|%.2f|%d\n",
+            koncertBaza[i]->kodUlaznice,
+            koncertBaza[i]->naziv,
+            koncertBaza[i]->cijena,
+            koncertBaza[i]->dostupno);
     }
 
-    fprintf(f, "Broj nogometnih ulaznica: %d\n", brojNogometUlaznica);
+    fprintf(f, "%d\n", brojNogometUlaznica);
     for (int i = 0; i < brojNogometUlaznica; i++) {
-        fprintf(f, "Kod ulaznice: %d//Ime dogadjaja: %s//Cijena: %.2f//Dostupno: %d\n", nogometBaza[i]->kodUlaznice, nogometBaza[i]->naziv, nogometBaza[i]->cijena, nogometBaza[i]->dostupno);
+        fprintf(f, "%d//%s|%.2f|%d\n",
+            nogometBaza[i]->kodUlaznice,
+            nogometBaza[i]->naziv,
+            nogometBaza[i]->cijena,
+            nogometBaza[i]->dostupno);
     }
 
     fclose(f);
 }
-
